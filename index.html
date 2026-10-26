@@ -142,6 +142,7 @@ header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content:
 
 footer { color: var(--muted); font-size: 13px; display: grid; gap: 4px; }
 footer p { margin: 0; }
+footer a { color: var(--accent); font-weight: 700; }
 @media (prefers-reduced-motion: no-preference) {
   .flash { animation: flash .5s ease-out; }
   @keyframes flash { from { background: var(--accent-soft); } to { background: var(--card); } }
@@ -223,6 +224,7 @@ footer p { margin: 0; }
   <footer>
     <p id="privacy">速度只算打對的字。你打的內容只留在你的瀏覽器，不會傳到任何地方。</p>
     <p>題庫 <span id="poolSize"></span> 句日常口語，每天台灣時間零點換新的每日挑戰。</p>
+    <p id="supportLink" hidden>覺得好用嗎？<a href="support.html">支持我們</a></p>
   </footer>
 </div>
 
@@ -526,6 +528,7 @@ const SENTENCES = ["我等等要去超市買東西","你今天晚上有空嗎","
   });
 
   initBoard();
+  if (FB) $('supportLink').hidden = false;  // 支持頁只在 GitHub Pages 版才有
   $('poolSize').textContent = SENTENCES.length.toLocaleString('zh-TW');
   newRound();
   renderHist();

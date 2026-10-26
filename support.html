@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="注音打字挑戰免費、沒有廣告，歡迎隨意贊助支持開發。">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+
+</head>
+<body>
+<title>支持注音打字挑戰</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* 版面：跟打字頁同一套配色字體。上面說明為什麼需要支持，中間四張金額卡，下面寫清楚贊助的性質 */
+:root {
+  --paper: #eef1f4;
+  --card: #ffffff;
+  --ink: #18222f;
+  --muted: #5f6b7a;
+  --line: #d7dde4;
+  --accent: #0b6e63;
+  --accent-soft: #dcefeb;
+  --accent-ink: #ffffff;
+  --mark: #f3c64b;
+  --display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --num: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12171d; --card: #1b222b; --ink: #e8edf2; --muted: #9aa6b4; --line: #2c3743;
+    --accent: #4fc2ae; --accent-soft: #183a35; --accent-ink: #0b1f1c; --mark: #e0b440; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12171d; --card: #1b222b; --ink: #e8edf2; --muted: #9aa6b4; --line: #2c3743;
+  --accent: #4fc2ae; --accent-soft: #183a35; --accent-ink: #0b1f1c; --mark: #e0b440; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.7; }
+.wrap { max-width: 780px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 26px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+
+.back { font-size: 14px; text-decoration: none; }
+.back:hover { text-decoration: underline; }
+h1 { margin: 0; font-family: var(--display); font-weight: 900; font-size: clamp(30px, 6vw, 42px); line-height: 1.2; text-wrap: balance; }
+.lead { margin: 0; max-width: 34em; color: var(--muted); }
+
+.tiers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 680px) { .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tier { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px 16px; display: grid; gap: 6px; align-content: start; }
+.tier.pick { border-color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
+.tier .amt { font-family: var(--num); font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 600; line-height: 1.1; }
+.tier .amt small { font-family: var(--body); font-size: 14px; font-weight: 500; color: var(--muted); margin-right: 2px; }
+.tier .name { font-weight: 700; }
+.tier .desc { color: var(--muted); font-size: 14px; line-height: 1.6; min-height: 3.2em; }
+.tier .go { margin-top: 6px; display: block; text-align: center; border-radius: 8px; padding: 7px 10px; font-size: 14px; font-weight: 700; text-decoration: none; background: var(--accent); color: var(--accent-ink); }
+.tier .go.soon { background: transparent; color: var(--muted); border: 1px dashed var(--line); font-weight: 500; cursor: default; }
+
+.uses { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: grid; gap: 8px; }
+.uses h2, .terms h2 { margin: 0; font-size: 17px; }
+.uses ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+.terms { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.terms h2 { color: var(--ink); }
+.terms ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+footer { color: var(--muted); font-size: 13px; }
+footer p { margin: 0; }
+</style>
+
+<div class="wrap">
+  <a class="back" href="./">← 回到注音打字挑戰</a>
+
+  <header style="display:grid;gap:10px">
+    <h1>支持我們</h1>
+    <p class="lead">注音打字挑戰和我們正在做的注音輸入法都免費使用，沒有廣告。如果它幫你打字更快、更少選字，歡迎隨意贊助，讓我們繼續做下去。</p>
+  </header>
+
+  <section class="tiers" aria-label="贊助金額">
+    <article class="tier">
+      <div class="amt"><small>NT$</small>10</div>
+      <div class="name">一顆糖</div>
+      <div class="desc">小小一份心意，我們都會收到。</div>
+      <a class="go" data-amount="10">贊助 10 元</a>
+    </article>
+    <article class="tier">
+      <div class="amt"><small>NT$</small>50</div>
+      <div class="name">一杯飲料</div>
+      <div class="desc">請開發者喝杯手搖，半糖少冰。</div>
+      <a class="go" data-amount="50">贊助 50 元</a>
+    </article>
+    <article class="tier pick">
+      <div class="amt"><small>NT$</small>100</div>
+      <div class="name">一個便當</div>
+      <div class="desc">夠付一個月的網域和小額主機費用。</div>
+      <a class="go" data-amount="100">贊助 100 元</a>
+    </article>
+    <article class="tier">
+      <div class="amt"><small>NT$</small>300</div>
+      <div class="name">一頓好料</div>
+      <div class="desc">幫助我們買程式碼簽章，讓輸入法安裝時不再跳警告。</div>
+      <a class="go" data-amount="300">贊助 300 元</a>
+    </article>
+  </section>
+
+  <section class="uses">
+    <h2>贊助會用在哪裡</h2>
+    <ul>
+      <li>網站網域與排行榜資料庫的費用</li>
+      <li>輸入法的程式碼簽章憑證（讓 Windows 不再顯示「未知的發行者」）</li>
+      <li>繼續改進選字準確度、做手機版</li>
+    </ul>
+  </section>
+
+  <section class="terms">
+    <h2>贊助說明</h2>
+    <ul>
+      <li>贊助完全自願，不贊助也能使用所有功能，贊助也不會影響排行榜。</li>
+      <li>贊助屬於支持開發的心意，不提供實體商品。</li>
+      <li>付款由第三方金流處理，我們不會取得你的信用卡資料。</li>
+      <li>如果金額付錯，請在付款後 7 天內透過 <a href="https://github.com/readyornot9/zhuyin-typing/issues" target="_blank" rel="noopener">GitHub 回報頁</a> 聯絡我們，我們會協助處理。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>感謝每一位使用和支持的人。</p>
+  </footer>
+</div>
+
+<script>
+// 各金額的付款連結：拿到金流的收款連結後填進來（沒填的會顯示「即將開放」）
+const SUPPORT_LINKS = { 10: '', 50: '', 100: '', 300: '' };
+(function () {
+  'use strict';
+  for (const a of document.querySelectorAll('.go')) {
+    const url = SUPPORT_LINKS[a.dataset.amount];
+    if (url) { a.href = url; a.target = '_blank'; a.rel = 'noopener'; }
+    else { a.classList.add('soon'); a.textContent = '即將開放'; a.setAttribute('aria-disabled', 'true'); }
+  }
+})();
+</script>
+
+</body>
+</html>
