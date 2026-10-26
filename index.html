@@ -140,6 +140,17 @@ header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content:
 .result .up .msg { font-size: 13px; opacity: .85; }
 .panel .clear { justify-self: start; border: 0; background: none; color: var(--muted); font-size: 13px; padding: 0; text-decoration: underline; }
 
+.product { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 18px; align-items: center; }
+.product .icon { grid-row: span 2; width: 64px; height: 64px; border-radius: 15px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--body); font-weight: 700; font-size: 38px; }
+.product h2 { margin: 0; font-family: var(--display); font-weight: 900; font-size: 24px; }
+.product p { margin: 0; color: var(--muted); font-size: 15px; }
+.product .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+.product .btn { display: inline-block; text-decoration: none; border-radius: 9px; padding: 9px 18px; font-weight: 700; font-size: 15px; border: 1px solid var(--accent); color: var(--accent); }
+.product .btn.solid { background: var(--accent); color: var(--accent-ink); }
+.product .small { font-size: 13px; color: var(--muted); }
+.product details { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+.product summary { cursor: pointer; color: var(--ink); }
+.product ol { margin: 8px 0 0; padding-left: 1.4em; display: grid; gap: 4px; }
 footer { color: var(--muted); font-size: 13px; display: grid; gap: 4px; }
 footer p { margin: 0; }
 footer a { color: var(--accent); font-weight: 700; }
@@ -220,6 +231,26 @@ footer a { color: var(--accent); font-weight: 700; }
       <p class="empty" id="lbEmpty">載入中…</p>
     </section>
   </div>
+
+  <section class="product" id="product" hidden>
+    <div class="icon" aria-hidden="true">懂</div>
+    <h2>懂你注音</h2>
+    <p>會學習的注音輸入法，打越多越懂你。跟微軟注音一樣的打法，選字更準，打的字只在你的電腦上處理。</p>
+    <div class="acts">
+      <a class="btn" href="try/">先在網頁上試用</a>
+      <a class="btn solid" href="download/DongNiZhuyin-Windows.zip" download>下載 Windows 版</a>
+      <span class="small">免費・Windows 10／11・約 52 MB</span>
+    </div>
+    <details>
+      <summary>怎麼安裝？</summary>
+      <ol>
+        <li>下載後在壓縮檔上按右鍵 →「解壓縮全部」。</li>
+        <li>打開解壓縮出來的「懂你注音」資料夾，點兩下「安裝.cmd」。如果出現「Windows 已保護您的電腦」，按「其他資訊」→「仍要執行」。</li>
+        <li>詢問「是否允許變更」時按「是」，看到「安裝完成」就好了。</li>
+        <li>按 Win＋空白鍵切換到「懂你注音」。已經開著的程式要重開才會出現。</li>
+      </ol>
+    </details>
+  </section>
 
   <footer>
     <p id="privacy">速度只算打對的字。你打的內容只留在你的瀏覽器，不會傳到任何地方。</p>
@@ -528,7 +559,7 @@ const SENTENCES = ["我等等要去超市買東西","你今天晚上有空嗎","
   });
 
   initBoard();
-  if (FB) $('supportLink').hidden = false;  // 支持頁只在 GitHub Pages 版才有
+  if (FB) { $('supportLink').hidden = false; $('product').hidden = false; }  // 支持頁、試用和下載只在 GitHub Pages 版才有
   $('poolSize').textContent = SENTENCES.length.toLocaleString('zh-TW');
   newRound();
   renderHist();

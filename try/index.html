@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>懂你注音 線上試用</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo">懂</span>
+    <div>
+      <h1>懂你注音 線上試用</h1>
+      <p class="sub">在下面直接打字試試看（先把 Windows 輸入法切到英文）。喜歡的話 <a href="../download/DongNiZhuyin-Windows.zip" download>下載 Windows 版</a>・<a href="../">回打字挑戰</a><span id="nnStatus" class="nnstatus">AI 複審：載入中…</span></p>
+    </div>
+  </div>
+  <button id="modeBtn" class="mode" title="切換中英（按一下 Shift 或 Ctrl＋空白鍵）">
+    <span id="modeLabel">中</span>
+    <small>Shift 切換</small>
+  </button>
+</header>
+
+<div id="imeWarn" class="warn" hidden>
+  偵測到 Windows 的輸入法還開著，按鍵會被它攔走。請先按 <kbd>Win</kbd>＋<kbd>空白鍵</kbd>（或點右下角）切到「英文 / ENG」再打字。
+</div>
+
+<main class="layout">
+  <section class="writer">
+    <div class="pad" id="pad">
+      <textarea id="ta" spellcheck="false" placeholder="點這裡開始打注音…&#10;&#10;試試看：ㄨㄛˇ ㄧ ㄓˊ ㄗㄞˋ ㄒㄧㄤˇ（按鍵 j i 3 u 空白 5 6 y 9 4 v u ; 3）&#10;或只打聲母：ㄓ ㄉ → 知道（按鍵 5 2，再按 Enter）"></textarea>
+      <div id="comp" class="comp" hidden></div>
+      <div id="cand" class="cand" hidden></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="tips">
+      <span><kbd>空白</kbd> 一聲</span>
+      <span><kbd>↓</kbd> 選字</span>
+      <span><kbd>←</kbd><kbd>→</kbd> 移到要改的字</span>
+      <span><kbd>Enter</kbd> 送出</span>
+      <span><kbd>`</kbd> 符號</span>
+      <span><kbd>Ctrl</kbd>＋<kbd>,</kbd> ，</span>
+      <label class="chk" title="打開：一個字按聲調或空白鍵才算打完，打錯的注音重按就換掉（ㄊㄨㄢ 再按 ㄍ → ㄍㄨㄢ），順序打反也沒關係。關掉：可以不打聲調連續打、只打聲母">
+        <input type="checkbox" id="strictChk"> 微軟打法（按聲調才結束一個字）</label>
+    </div>
+  </section>
+
+  <section class="practice" id="practice" hidden>
+    <div class="pbar">
+      <label>題庫
+        <select id="pSet">
+          <option value="fresh">新題（引擎沒修過）</option>
+          <option value="old">舊題（測試過的）</option>
+          <option value="custom">我貼的文章</option>
+        </select>
+      </label>
+      <span id="pCount" class="rd"></span>
+      <button id="pEditCustom" hidden>換文章</button>
+      <button id="pSkip" title="沒打字時按 Esc 也可以跳過">跳過</button>
+    </div>
+    <div id="pCustom" class="pcustom" hidden>
+      <textarea id="pText" placeholder="貼上文章，會依句號、問號、驚嘆號和換行切成一句一句"></textarea>
+      <button id="pUse" class="primary">用這篇練習</button>
+    </div>
+    <div class="ptarget" id="pTarget"></div>
+    <input id="pin" class="pin" autocomplete="off" spellcheck="false" placeholder="用 Windows 的懂你注音照著打，打完會自動跳下一句">
+    <div class="pnext" id="pNext"></div>
+    <div class="plast" id="pLast"></div>
+    <div class="stats" id="pStats"></div>
+    <div class="tips">
+      <span>想測選字準不準：只打注音、不改字，直接送出</span>
+      <span>想測平常速度：照平常的習慣打，會改字也沒關係</span>
+      <span><kbd>Enter</kbd> 提早送出</span>
+      <span><kbd>Esc</kbd> 跳過</span>
+      <span>標點不算分</span>
+    </div>
+  </section>
+
+  <aside class="side">
+    <nav class="tabs" role="tablist">
+      <button data-tab="article" class="on">練習文章</button>
+      <button data-tab="practice">打字練習</button>
+      <button data-tab="tests">測試題</button>
+      <button data-tab="learn">學習紀錄</button>
+      <button data-tab="help">按鍵說明</button>
+    </nav>
+
+    <div class="panel article" data-panel="article">
+      <p class="note">照著打一遍，打完看下面的「每百字要選幾次」。這篇收錄了網友最常抱怨的選字（附件、新北市、一直、實在、點擊…）。</p>
+      <div id="articleBox"></div>
+    </div>
+
+    <div class="panel" data-panel="practice" hidden>
+      <p class="note">左邊會換成練習區。這一區用的是你電腦上的輸入法，不是網頁內建的；紀錄只存在這台電腦的瀏覽器，不會傳出去。</p>
+      <div class="btns">
+        <button id="pCopy">複製打錯的句子</button>
+        <button id="pClear" class="danger">清除練習紀錄</button>
+      </div>
+      <p id="pCopyStatus" class="note"></p>
+      <h4 id="pWrongCount" class="ptitle"></h4>
+      <ul id="pWrong" class="tlist"></ul>
+    </div>
+
+    <div class="panel" data-panel="tests" hidden>
+      <div class="row">
+        <div id="testScore" class="score"></div>
+        <label class="chk"><input type="checkbox" id="useUser" checked> 套用我的學習</label>
+      </div>
+      <div id="addLast" class="addlast" hidden></div>
+      <ul id="testList" class="tlist"></ul>
+    </div>
+
+    <div class="panel" data-panel="learn" hidden>
+      <p class="note">你的學習資料只存在這台電腦的瀏覽器裡。<span id="seedInfo"></span></p>
+      <div id="ownerBox" class="addlast" hidden>
+        <div>你是擁有者：把目前的學習紀錄（含預設）和自訂測試題設為<b>所有人的預設</b>。上傳後跟 Claude 說「更新預設」，下一版就會內建。</div>
+        <div class="acts"><button id="seedBtn" class="primary">設為所有人的預設</button><span id="seedStatus" class="rd"></span></div>
+      </div>
+      <div class="btns">
+        <button id="exportBtn">匯出</button>
+        <button id="importBtn">匯入</button>
+        <button id="clearBtn" class="danger">清除我的紀錄</button>
+        <input type="file" id="importFile" accept=".json" hidden>
+      </div>
+      <div id="learnList"></div>
+    </div>
+
+    <div class="panel help" data-panel="help" hidden>
+      <h3>打字</h3>
+      <dl>
+        <dt>注音鍵盤</dt><dd>標準（大千）排列，跟微軟注音一樣</dd>
+        <dt>一聲</dt><dd>空白鍵</dd>
+        <dt>微軟打法</dt><dd>預設開啟：一個字要按聲調或空白鍵才算打完；還沒打完前，打錯的注音直接重按就換掉（ㄊㄨㄢ 再按 ㄍ → ㄍㄨㄢ），ㄜㄇ˙ 打反也會變成 ㄇㄜ˙。開頭單打聲母加空白會打出注音符號本身（ㄏ空白 → ㄏ）</dd>
+        <dt>不打聲調</dt><dd>關掉微軟打法時：直接打下一個字的注音，會自動猜</dd>
+        <dt>只打聲母</dt><dd>關掉微軟打法時：ㄉㄐㄏ → 大家好。最後一個字也會先猜好，打完直接按 ↓ 改字或 Enter 送出；按空白鍵則是結束這個音、繼續打</dd>
+        <dt>補聲調</dt><dd>沒打聲調的字，之後再按聲調鍵就補上</dd>
+        <dt>送出</dt><dd>Enter，或直接打標點</dd>
+      </dl>
+      <h3>選字</h3>
+      <dl>
+        <dt>打開選字</dt><dd>↓</dd>
+        <dt>空白</dt><dd>字打完聲調後按空白鍵：送出並打出一個空白</dd>
+        <dt>打出注音</dt><dd>從聲母開始一個一個加空白：ㄏ空白 ㄠ空白 3 → ㄏㄠˇ（ㄏ空白ㄏ空白 → ㄏㄏ）。任何字打完按空白、再按聲調鍵，也會變成注音：ㄨㄛ空白 3 → ㄨㄛˇ。或打完字按 ↓，第一頁最後一個也是注音</dd>
+        <dt>字後加聲調</dt><dd>打好聲調的字後面再按聲調鍵：我（ㄨㄛˇ）再按 3 → 我ˇ</dd>
+        <dt>簡拼</dt><dd>前面已經有字才會猜：我（ㄨㄛˇ）接 ㄏ空白 → 我會</dd>
+        <dt>改中間的字</dt><dd>先按 ← → 移到那個字前面，再按 ↓</dd>
+        <dt>選擇</dt><dd>數字 1–9，或 ↑↓ 加 Enter，或滑鼠點</dd>
+        <dt>翻頁</dt><dd>空白鍵／→ 下一頁，← 上一頁</dd>
+        <dt>學習</dt><dd>你選過的字會記住，下次在同樣的前後文自動選對</dd>
+        <dt>AI 複審</dt><dd>停下來約 0.15 秒，神經網路會從前 5 個候選句挑最通順的，組字區閃一下代表它幫你改了字；按 Enter 送出前也會先複審</dd>
+      </dl>
+      <h3>中英與符號</h3>
+      <dl>
+        <dt>切換中英</dt><dd>單按一下 Shift，或 Ctrl＋空白鍵</dd>
+        <dt>大寫英文</dt><dd>Shift＋字母，不用切換</dd>
+        <dt>中文標點</dt><dd>按住 Ctrl：Ctrl＋, . / ; ' 是 ，。？：、（全形；在 ` 符號面板），Ctrl＋[ ] 是『』，Ctrl＋1 9 0 是 ！（），Ctrl＋6 是 …，Ctrl＋- 是 ——</dd>
+        <dt>不用按鍵</dt><dd>' 是「、」，[ ] 是「」</dd>
+        <dt>半形符號</dt><dd>按住 Shift：跟英文鍵盤一樣，! @ # ( ) &lt; &gt; ? : " { } | ~ 等等（其他全形符號在 ` 符號面板）</dd>
+        <dt>符號面板</dt><dd>` 鍵打開，Tab 換類別，數字選</dd>
+        <dt>數字</dt><dd>右邊的數字鍵盤直接打數字</dd>
+        <dt>聲調符號</dt><dd>沒在打字時單按 3 4 6 7，打出 ˇ ˋ ˊ ˙</dd>
+      </dl>
+      <h3>資料來源</h3>
+      <dl>
+        <dt>詞庫</dt><dd>小麥注音（McBopomofo）詞庫，MIT 授權</dd>
+        <dt>前後文統計</dt><dd>由<a href="https://zh.wikipedia.org/" target="_blank" rel="noopener">中文維基百科</a>繁體文章統計詞語相鄰次數，依 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh_TW" target="_blank" rel="noopener">CC BY-SA 4.0</a> 釋出</dd>
+        <dt>AI 複審模型</dt><dd>自行訓練的神經網路（1340 萬參數），訓練資料為上述三個來源，加上 <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-2" target="_blank" rel="noopener">FineWeb-2</a> 繁體中文網頁（ODC-By 1.0）</dd>
+        <dt>口語統計</dt><dd><a href="https://tatoeba.org/" target="_blank" rel="noopener">Tatoeba</a> 例句（CC BY 2.0 FR）、<a href="https://commonvoice.mozilla.org/" target="_blank" rel="noopener">Mozilla Common Voice</a> 台灣華語句子（CC0）</dd>
+      </dl>
+    </div>
+  </aside>
+</main>
+
+<div id="loading" class="loading">載入詞庫中…</div>
+
+<script src="dict.js"></script>
+<script src="lm.js"></script>
+<script src="engine.js"></script>
+<script src="nn.js"></script>
+<script src="testcases.js"></script>
+<script src="seed.js"></script>
+<script src="app.js"></script>
+<script src="practice-data.js"></script>
+<script src="practice.js"></script>
+</body>
+</html>
