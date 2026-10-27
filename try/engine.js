@@ -600,6 +600,8 @@
     const before = all.slice(0, i), after = all.slice(i + 1);
     const clause = after.split(/[，。！？、；：,.!?]/)[0];
     if (ZAI.progressive.test(before) && !ZAI.notProgressive.test(after)) return '在';
+    // 我現在在跟他講（「現在再跟他試一次」有一下／一次，不受影響）
+    if (/現在$/.test(before) && /^(跟|和)/.test(after) && !ZAI.attempt.test(clause)) return '在';
     // 在＋地點＋見：等等在出口見、明天在門口見（「再見」後面沒有地點，不受影響）
     if (/^[^，。！？]{1,4}見(吧|囉|喔)?$/.test(clause)) return '在';
     if (ZAI.later.test(before) || /(.)一\1$/.test(before)) return '再';
@@ -607,6 +609,8 @@
     if (/先./.test(head) && ZAI.verb.test(after)) return '再';
     if (ZAI.verb.test(after) && ZAI.attempt.test(clause.slice(0, 8))) return '再';
     if (ZAI.followUp.test(clause)) return '再';
+    // 我再跟他講、再跟你說一聲（句子停在講／說；「在跟他講話／講電話」後面還有字，不受影響）
+    if (!/現在$/.test(before) && /^(跟|和|向)[^，。！？]{1,4}?(講|說)(一下|一聲|看看)?(吧|啦|好了|喔)?$/.test(clause)) return '再';
     if (ZAI.modal.test(before) && ZAI.modalVerb.test(after)) return '再';
     if (ZAI.done.test(head) && ZAI.verb.test(after)) return '再';
     // 不行的話再想、不然再說（「下雨的話在家」後面接地點，不受影響）
