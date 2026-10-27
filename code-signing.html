@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>程式碼簽章政策｜懂你注音</title>
+<style>
+  :root { --bg: #fbfaf7; --fg: #1f2328; --muted: #5d6470; --line: #e3e0d8; --accent: #1a6b55; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16181c; --fg: #e8e6e1; --muted: #a3a8b1; --line: #2c3036; --accent: #6cc4a8; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.7 system-ui, "Microsoft JhengHei", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  h2 { font-size: 1.15rem; margin: 32px 0 8px; }
+  p, li { color: var(--fg); }
+  .muted { color: var(--muted); }
+  a { color: var(--accent); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+</style>
+</head>
+<body>
+<main>
+  <h1>程式碼簽章政策 Code signing policy</h1>
+  <p class="muted"><a href="./">← 回懂你注音</a></p>
+
+  <p>Free code signing provided by <a href="https://about.signpath.io/">SignPath.io</a>, certificate by <a href="https://signpath.org/">SignPath Foundation</a>.</p>
+  <p>懂你注音的 Windows 安裝檔使用 SignPath.io 提供的免費程式碼簽章，憑證由 SignPath Foundation 核發。只有從
+    <a href="https://github.com/readyornot9/dongni-zhuyin">公開原始碼儲存庫</a>經 GitHub Actions 自動建置的檔案才會簽章，每次發布都要經過下列核准者人工核准。</p>
+
+  <h2>團隊角色 Team roles</h2>
+  <table>
+    <tr><th>角色</th><th>成員</th></tr>
+    <tr><td>Committers and reviewers（可修改程式碼、審查他人提交）</td><td><a href="https://github.com/readyornot9">readyornot9</a></td></tr>
+    <tr><td>Approvers（核准每次簽章）</td><td><a href="https://github.com/readyornot9">readyornot9</a></td></tr>
+  </table>
+
+  <h2>隱私權 Privacy policy</h2>
+  <p>This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.</p>
+  <p>懂你注音輸入法完全在你的電腦上執行：你打的字、選字紀錄與學習資料只存在你自己的電腦（<code>%APPDATA%\ShunDa</code>），不會傳到任何網路系統。</p>
+  <p class="muted">打字練習網站的排行榜只有在你主動送出成績時，才會上傳你填的暱稱與成績。</p>
+</main>
+</body>
+</html>
