@@ -1204,10 +1204,10 @@
       return items.slice(s.page * this.opts.pageSize, s.page * this.opts.pageSize + this.opts.pageSize);
     }
 
+    // 符號面板選的符號跟標點一樣：組字區有字就放進組字區，沒有就直接送出
     pickSymbol(ch, out) {
-      this.commitAll(out);
-      out.commit += ch;
       this.symbol = null;
+      this.typePunct(ch, out);
     }
 
     handleSymbolKey(k, out) {
