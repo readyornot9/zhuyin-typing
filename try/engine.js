@@ -36,6 +36,17 @@
     'Ctrl+BracketLeft': '『', 'Ctrl+BracketRight': '』', 'Ctrl+Backslash': '｜', 'Ctrl+Backquote': '～',
     'Ctrl+Digit1': '！', 'Ctrl+Digit6': '…', 'Ctrl+Digit9': '（', 'Ctrl+Digit0': '）', 'Ctrl+Minus': '——',
   };
+  // 英文模式下按鍵打出的字（美式鍵盤），組字區有字時放進組字區用
+  const EN_PLAIN = { Space: ' ', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\',
+    Semicolon: ';', Quote: "'", Comma: ',', Period: '.', Slash: '/', Backquote: '`' };
+  function enCharOf(k) {
+    if (k.ctrl || k.alt || k.meta) return undefined;
+    if (/^Key[A-Z]$/.test(k.code)) return k.shift ? k.code.slice(3) : k.code.slice(3).toLowerCase();
+    if (/^Digit\d$/.test(k.code)) return k.shift ? PUNCT['Shift+' + k.code] : k.code.slice(5);
+    if (/^Numpad\d$/.test(k.code)) return k.code.slice(6);
+    return k.shift ? PUNCT['Shift+' + k.code] : EN_PLAIN[k.code];
+  }
+
   // 這個按鍵組合對應到哪個標點（沒有就是 undefined）；Ctrl 和 Shift 一起按、或有 Alt/Win 都不算
   function punctOf(k) {
     if (k.alt || k.meta || (k.ctrl && k.shift)) return undefined;
@@ -901,48 +912,50 @@
       if (this.symbol) return this.handleSymbolKey(k, out);
       if (this.cand) return this.handleCandKey(k, out);
 
-      if (this.mode === 'en') return out;
+      if (this.mode === 'en') {
+        // 英文模式：沒在打字就交給程式；組字區有字就把英文接在後面，前面的中文之後還能選字
+        if (!this.composing) return out;
+        const ch = enCharOf(k);
+        if (ch !== undefined) {
+          this.insertSyllable({ body: ch, tone: '', punct: true });
+          this.maybeAutoCommit(out);
+          out.handled = true;
+          return out;
+        }
+      } else {
+        if (k.code === 'Backquote' && !k.shift) {
+          this.symbol = { cat: 0, page: 0 };
+          out.handled = true;
+          return out;
+        }
 
-      if (k.code === 'Backquote' && !k.shift) {
-        this.symbol = { cat: 0, page: 0 };
-        out.handled = true;
-        return out;
-      }
+        const sym = !k.shift && KEYMAP[k.code];
+        if (sym) {
+          this.typeSymbol(sym, out);
+          out.handled = true;
+          return out;
+        }
 
-      const sym = !k.shift && KEYMAP[k.code];
-      if (sym) {
-        this.typeSymbol(sym, out);
-        out.handled = true;
-        return out;
-      }
+        if (punctOf(k)) {
+          this.typePunct(punctOf(k), out);
+          out.handled = true;
+          return out;
+        }
 
-      if (punctOf(k)) {
-        this.typePunct(punctOf(k), out);
-        out.handled = true;
-        return out;
-      }
-
-      if (k.shift && /^Key[A-Z]$/.test(k.code)) {
-        // Shift＋字母：直接打大寫英文
-        this.commitAll(out);
-        out.commit += k.code.slice(3);
-        out.handled = true;
-        return out;
-      }
-
-      if (/^Numpad\d$/.test(k.code)) {
-        this.commitAll(out);
-        out.commit += k.code.slice(6);
-        out.handled = true;
-        return out;
+        if ((k.shift && /^Key[A-Z]$/.test(k.code)) || /^Numpad\d$/.test(k.code)) {
+          // Shift＋字母打大寫英文、數字鍵盤打數字：組字區有字就接在後面（前面的字還能選），沒有就直接送出
+          this.typePunct(enCharOf(k), out);
+          out.handled = true;
+          return out;
+        }
       }
 
       switch (k.code) {
         case 'Space':
           out.handled = true;
-          // 已經打完聲調的字再按空白：送出組字區再打一個空白（不打開選字，要選字按 ↓）
+          // 打到一半按空白是一聲；組字區有字時空白不做事（不送出，要送出按 Enter），沒在打字時才打出空白
           if (this.pending) this.finishSyllable('');
-          else { if (this.syls.length) this.commitAll(out); out.commit += ' '; }
+          else if (!this.syls.length) out.commit += ' ';
           break;
         case 'Enter':
         case 'NumpadEnter':
@@ -1134,8 +1147,9 @@
       }
     }
 
+    // 切換中英不送出組字區：打到一半的注音先收成一個音，英文接在後面，最後按 Enter 一起送出
     toggleMode(out) {
-      if (this.composing) this.commitAll(out);
+      this.flushPending();
       this.cand = null;
       this.symbol = null;
       this.mode = this.mode === 'zh' ? 'en' : 'zh';

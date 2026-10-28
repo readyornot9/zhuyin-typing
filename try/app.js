@@ -109,9 +109,9 @@
   }
 
   function willCommit(k) {
-    if (!composer.composing || composer.cand || composer.symbol || composer.mode !== 'zh' || k.alt || k.meta) return false;
+    if (!composer.composing || composer.cand || composer.symbol || k.alt || k.meta) return false;
     if (k.ctrl) return !!S.punctOf(k) && !composer.composing;
-    return k.code === 'Enter' || k.code === 'NumpadEnter' || (k.code === 'Space' && !composer.pending) || (!!S.punctOf(k) && !composer.composing);
+    return k.code === 'Enter' || k.code === 'NumpadEnter' || (!!S.punctOf(k) && !composer.composing);
   }
 
   function nnNeedsRerank() {
