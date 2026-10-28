@@ -953,9 +953,9 @@
       switch (k.code) {
         case 'Space':
           out.handled = true;
-          // 打到一半按空白是一聲；組字區有字時空白不做事（不送出，要送出按 Enter），沒在打字時才打出空白
+          // 打到一半按空白是一聲；組字區有字時空白放進組字區（不送出，要送出按 Enter），沒在打字時直接打出空白
           if (this.pending) this.finishSyllable('');
-          else if (!this.syls.length) out.commit += ' ';
+          else this.typePunct(' ', out);
           break;
         case 'Enter':
         case 'NumpadEnter':
