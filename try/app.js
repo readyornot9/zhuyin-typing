@@ -110,8 +110,8 @@
 
   function willCommit(k) {
     if (!composer.composing || composer.cand || composer.symbol || composer.mode !== 'zh' || k.alt || k.meta) return false;
-    if (k.ctrl) return !!S.punctOf(k);
-    return k.code === 'Enter' || k.code === 'NumpadEnter' || (k.code === 'Space' && !composer.pending) || !!S.punctOf(k);
+    if (k.ctrl) return !!S.punctOf(k) && !composer.composing;
+    return k.code === 'Enter' || k.code === 'NumpadEnter' || (k.code === 'Space' && !composer.pending) || (!!S.punctOf(k) && !composer.composing);
   }
 
   function nnNeedsRerank() {
@@ -299,7 +299,7 @@
         if (i === pendingIndex) {
           // 還在打的音：顯示猜到的字，上方小字標出目前打的注音
           span.classList.add('typing');
-          span.dataset.bpmf = composer.pending;
+          span.dataset.bpmf = composer.orderedPending();
         }
         seg.appendChild(span);
       }

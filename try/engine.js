@@ -369,6 +369,8 @@
 
     spanEntries(syls, i, j) {
       const part = syls.slice(i, j);
+      // 組字區裡的標點：只能單獨成一段，字就是標點本身
+      if (part.some((x) => x.punct)) return j - i === 1 ? [{ w: part[0].body, r: part[0].body, syl: [part[0].body], s: 0, punct: true }] : [];
       let list = this.dict.lookup(part);
       const mine = this.user.phrasesOfLength(j - i).filter((e) => e.syl.every((d, k) => sylMatches(part[k], d)));
       if (mine.length) {
@@ -456,8 +458,9 @@
           const cands = candidates(i, j);
           for (const path of beams[i]) {
             for (const c of cands) {
-              const ctx = useUser ? this.user.contextBonus(path.last, c) : 0;
-              const lmb = this.lm && !c.fallback && path.last ? this.lm.bonus(path.last.w, c.w, c.s, c.minor) : 0;
+              const across = c.punct || (path.last && path.last.punct);
+              const ctx = useUser && !across ? this.user.contextBonus(path.last, c) : 0;
+              const lmb = this.lm && !c.fallback && !across && path.last ? this.lm.bonus(path.last.w, c.w, c.s, c.minor) : 0;
               next.push({ score: path.score + c.base + ctx + lmb, last: c, nodes: path.nodes.concat([{ s: i, e: j, w: c.w, r: c.r, picked: !!c.picked, fallback: !!c.fallback }]) });
             }
           }
@@ -889,8 +892,7 @@
       if (k.ctrl || k.alt || k.meta) {
         if (k.ctrl && k.code === 'Space') { this.toggleMode(out); out.handled = true; }
         else if (this.mode === 'zh' && !this.symbol && !this.cand && punctOf(k)) {
-          this.commitAll(out);
-          out.commit += punctOf(k);
+          this.typePunct(punctOf(k), out);
           out.handled = true;
         }
         return out;
@@ -915,8 +917,7 @@
       }
 
       if (punctOf(k)) {
-        this.commitAll(out);
-        out.commit += punctOf(k);
+        this.typePunct(punctOf(k), out);
         out.handled = true;
         return out;
       }
@@ -1004,13 +1005,24 @@
       return out;
     }
 
+    // 標點：組字區有字就放進組字區（前面的字之後還能選），沒有在打字就直接送出
+    typePunct(p, out) {
+      if (!this.composing) { out.commit += p; return; }
+      this.flushPending();
+      this.insertSyllable({ body: p, tone: '', punct: true });
+      this.maybeAutoCommit(out);
+    }
+
     typeSymbol(sym, out) {
       const slot = slotOf(sym);
       if (slot === 3) {
         if (this.pending) { this.finishSyllable(sym); return; }
         // 沒有正在打的音，就幫前一個沒聲調的音補上聲調
         const prev = this.syls[this.cursor - 1];
-        if (prev && (prev.tone === null || (prev.lit && prev.tone === ''))) {
+        if (prev && prev.punct) {
+          this.commitAll(out);
+          out.commit += sym;
+        } else if (prev && (prev.tone === null || (prev.lit && prev.tone === ''))) {
           prev.tone = sym;
           delete prev.loose;
           this.dropLocksTouching(this.cursor - 1, this.cursor);
@@ -1104,7 +1116,7 @@
       if (!this.syls.length) { this.reset(); return; }
       const res = this.result;
       // 注音符號本身（ㄏ、ㄏㄠˇ）不當成用字習慣學起來
-      const learnable = res.nodes.filter((nd) => !/[ㄅ-ㄩˊˇˋ˙]/.test(nd.w));
+      const learnable = res.nodes.filter((nd) => !/[ㄅ-ㄩˊˇˋ˙]/.test(nd.w) && !this.syls[nd.s].punct);
       if (learnable.length) this.engine.user.learn(learnable, this.lastCommittedWord);
       this.countStats(this.syls.length, this.picksThisRound, true);
       this.lastSubmission = { reading: formatReading(this.syls), text: res.text, picks: this.picksThisRound };
