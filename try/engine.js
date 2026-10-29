@@ -406,7 +406,45 @@
 
     // locks：[{ s, e, w }] 使用者手動選過的區段
     // only：只接受這句文字（用來替 AI 產生的句子算統計分數），沒有路徑就回傳空結果
+    // 組字區裡的空白不切斷前後文：先拿掉空白整句判斷（「你要再 試試看」還是看得到後面的「試試看」），再把空白放回原位
     convert(syls, opts) {
+      const isSpace = (x) => x.punct && x.body === ' ';
+      if (!syls.some(isSpace)) return this.convertCore(syls, opts);
+      opts = opts || {};
+      const keep = []; // 拿掉空白後第 k 個音節，原本在第幾個
+      syls.forEach((x, i) => { if (!isSpace(x)) keep.push(i); });
+      if (!keep.length) return this.convertCore(syls, opts);
+      const back = new Map(keep.map((orig, k) => [orig, k]));
+      const sub = Object.assign({}, opts);
+      if (opts.locks) sub.locks = opts.locks.filter((L) => back.has(L.s) && back.has(L.e - 1) && back.get(L.e - 1) - back.get(L.s) === L.e - 1 - L.s)
+        .map((L) => Object.assign({}, L, { s: back.get(L.s), e: back.get(L.e - 1) + 1 }));
+      if (opts.only) { const only = [...opts.only]; sub.only = keep.map((i) => only[i]); }
+      const spread = (nodes) => {
+        const out = [];
+        for (const nd of nodes) {
+          const chars = [...nd.w];
+          // 字數跟音節數對不上（詞庫沒有、顯示注音的音節）就整段放回去
+          if (chars.length !== nd.e - nd.s) { out.push(Object.assign({}, nd, { s: keep[nd.s], e: keep[nd.e - 1] + 1 })); continue; }
+          // 一個詞橫跨空白（「再試」中間按了空白）：在空白處切開
+          let from = nd.s;
+          for (let k = nd.s + 1; k <= nd.e; k++) {
+            if (k < nd.e && keep[k] === keep[k - 1] + 1) continue;
+            out.push(Object.assign({}, nd, { s: keep[from], e: keep[k - 1] + 1, w: chars.slice(from - nd.s, k - nd.s).join('') }));
+            from = k;
+          }
+        }
+        syls.forEach((x, i) => { if (isSpace(x)) out.push({ s: i, e: i + 1, w: ' ', r: ' ' }); });
+        out.sort((p, q) => p.s - q.s);
+        return out;
+      };
+      const r = this.convertCore(keep.map((i) => syls[i]), sub);
+      const nodes = spread(r.nodes);
+      const res = { nodes, text: nodes.map((x) => x.w).join(''), score: r.score };
+      if (r.nbest) res.nbest = r.nbest.map((c) => { const nd = spread(c.nodes); return { text: nd.map((x) => x.w).join(''), score: c.score, nodes: nd }; });
+      return res;
+    }
+
+    convertCore(syls, opts) {
       opts = opts || {};
       const only = opts.only ? [...opts.only] : null;
       if (only && only.length !== syls.length) return { nodes: [], text: '' };
