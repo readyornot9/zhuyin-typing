@@ -564,7 +564,8 @@
       for (const [s, e] of spans) {
         const part = syls.slice(s, e);
         const list = this.spanEntries(syls, s, e)
-          .map((x) => ({ x, sc: x.s + tonePenalty(part, x) + this.user.unigramBonus(x) }))
+          // 破音字的少見讀音（「和」ㄏㄢˋ）分數很低，但字本身很常用：選字清單裡往前排一些，不用翻頁找
+          .map((x) => ({ x, sc: x.s + (x.minor && e - s === 1 ? -x.minor * 0.5 : 0) + tonePenalty(part, x) + this.user.unigramBonus(x) }))
           .sort((a, b) => b.sc - a.sc);
         for (const { x } of list) {
           const k = s + ':' + e + ':' + x.w;
@@ -902,8 +903,10 @@
 
       if (k.ctrl || k.alt || k.meta) {
         if (k.ctrl && k.code === 'Space') { this.toggleMode(out); out.handled = true; }
-        else if (this.mode === 'zh' && !this.symbol && !this.cand && punctOf(k)) {
-          this.typePunct(punctOf(k), out);
+        else if (k.ctrl && !this.symbol && !this.cand && punctOf(k)) {
+          // Ctrl＋標點打全形符號，英文模式也可以（英文模式沒在打字就直接送出，不開組字區）
+          if (this.mode === 'en' && !this.composing) out.commit += punctOf(k);
+          else this.typePunct(punctOf(k), out);
           out.handled = true;
         }
         return out;
@@ -955,7 +958,8 @@
           out.handled = true;
           // 打到一半按空白是一聲；組字區有字時空白放進組字區（不送出，要送出按 Enter），沒在打字時直接打出空白
           if (this.pending) this.finishSyllable('');
-          else this.typePunct(' ', out);
+          else if (this.composing) this.typePunct(' ', out);
+          else out.commit += ' ';
           break;
         case 'Enter':
         case 'NumpadEnter':
@@ -1018,9 +1022,8 @@
       return out;
     }
 
-    // 標點：組字區有字就放進組字區（前面的字之後還能選），沒有在打字就直接送出
+    // 標點：放進組字區（跟微軟注音一樣有底線，前面的字之後還能選），按 Enter 才送出
     typePunct(p, out) {
-      if (!this.composing) { out.commit += p; return; }
       this.flushPending();
       this.insertSyllable({ body: p, tone: '', punct: true });
       this.maybeAutoCommit(out);
@@ -1147,9 +1150,10 @@
       }
     }
 
-    // 切換中英不送出組字區：打到一半的注音先收成一個音，英文接在後面，最後按 Enter 一起送出
+    // 切換中英不送出組字區，英文接在後面，最後按 Enter 一起送出。
+    // 打到一半還沒打聲調的注音丟掉：通常是想打英文卻打成注音（打 apple 變成ㄇㄣ），切英文時順便清掉
     toggleMode(out) {
-      this.flushPending();
+      this.pending = '';
       this.cand = null;
       this.symbol = null;
       this.mode = this.mode === 'zh' ? 'en' : 'zh';
