@@ -105,6 +105,10 @@ h1 { font-size: 20px; margin: 0; }
 .cand .item.on { background: var(--accent); color: var(--accent-text); }
 .cand .item.on .n, .cand .item.on .r { color: var(--accent-text); }
 .cand .item:hover:not(.on) { background: var(--surface-2); }
+.cand.wide { max-width: 640px; }
+.cand .cgrid { display: grid; gap: 2px; }
+.cand .cgrid .item { gap: 4px; padding: 3px 8px; }
+.cand .cgrid .item .n { width: auto; }
 .cand .foot { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; padding: 4px 10px 0; border-top: 1px solid var(--line); margin-top: 4px; }
 .cand .cats { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 4px 6px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
 .cand .cats span { font-size: 12px; padding: 1px 8px; border-radius: 99px; color: var(--muted); cursor: pointer; }

@@ -670,6 +670,8 @@
     if (/(的話|不然)$/.test(before) && ZAI.verb.test(after)) return '再';
     // 再一局、再一次、再一杯（「在一家公司」「在一個地方」後面接地點，不受影響）
     if (/^一[局次遍杯碗份輪回把場盤題首]/.test(after)) return '再';
+    // 再改善、再加強、再優化（句子開頭或接在動作後面；「我在改善」「公司在改善」有主詞，是正在做，不受影響）
+    if (/^(改善|改進|加強|優化|修正|補強|精進|強化|調整|修改)/.test(after) && !/(我|你|妳|他|她|您|們|大家|人|司|府|方|正|還|也|都|仍|一直)$/.test(before)) return '再';
     return null;
   }
 
@@ -728,6 +730,10 @@
     { bad: /(?<=比過|比較過)架/g, fix: '價' },
     // 我買禮物給我媽（我給我自己不會用「嗎」問）
     { bad: /(?<=^我[^你您妳，。！？]{0,12}給我)嗎$/g, fix: '媽' },
+    // 句尾的「嗎」：可以再改善嗎、這樣可以嗎（還沒打聲調時「媽」常會先跑出來）；我媽、你媽、阿媽、叫媽這類不受影響
+    { bad: /(?<![我你妳他她您的老阿爸姑舅姨伯叔奶祖乾後繼親媽爹大小叫想找問跟和給陪帶看])媽(?=$|[，。！？ ])/g, fix: '嗎' },
+    // 幫我加、幫你加（打到一半句子停在這裡時）；幫我家人、幫我家裡後面有接東西，不受影響
+    { bad: /(?<=幫(我|你|妳|他|她|忙))家(?=$|[，。！？ ])/g, fix: '加' },
     // 請人坐：要不要先坐一下、請坐一下（後面沒有接事情時）
     { bad: /(?<=要不要先?|請先?|先進來)做(?=一下吧?(?:$|[，。！？]))/g, fix: '坐' },
     // 坐位置：這個位置可以坐嗎、椅子可以坐
@@ -1061,7 +1067,9 @@
     }
 
     // 標點：放進組字區（跟微軟注音一樣有底線，前面的字之後還能選），按 Enter 才送出
+    // 沒在打字時打半形符號（Shift＋數字的 !@#、大寫英文、數字鍵盤）不開組字區，直接送出
     typePunct(p, out) {
+      if (!this.composing && /^[\x21-\x7e]$/.test(p)) { out.commit += p; return; }
       this.flushPending();
       this.insertSyllable({ body: p, tone: '', punct: true });
       this.maybeAutoCommit(out);
@@ -1235,12 +1243,17 @@
         if (item) this.selectCandidate(item);
         return out;
       }
+      if (c.expanded) return this.handleGridKey(k, out);
       switch (k.code) {
         case 'Escape': this.cand = null; break;
         case 'Enter': case 'NumpadEnter': this.selectCandidate(c.list[c.hi]); break;
+        case 'ArrowRight':
+          // 按右鍵把全部候選字攤開成表格，不用一頁一頁翻
+          if (c.list.length > ps) { c.expanded = true; this.scrollGrid(); }
+          break;
         case 'ArrowDown': c.hi = Math.min(c.list.length - 1, c.hi + 1); c.page = Math.floor(c.hi / ps); break;
         case 'ArrowUp': c.hi = Math.max(0, c.hi - 1); c.page = Math.floor(c.hi / ps); break;
-        case 'Space': case 'PageDown': case 'ArrowRight':
+        case 'Space': case 'PageDown':
           c.page = (c.page + 1) % pages; c.hi = c.page * ps; break;
         case 'PageUp': case 'ArrowLeft':
           c.page = (c.page - 1 + pages) % pages; c.hi = c.page * ps; break;
@@ -1250,6 +1263,50 @@
           return this.handleKey(k);
         }
       }
+      return out;
+    }
+
+    // 攤開的候選字表：每列 pageSize 個，一次顯示 GRID_ROWS 列；
+    // 方向鍵移動、數字選高亮那一列的第幾個、空白往下翻、Esc 或在第一列按上收回成一般選字窗
+    candGrid() {
+      const c = this.cand, cols = this.opts.pageSize;
+      const rows = Math.ceil(c.list.length / cols);
+      const items = c.list.slice(c.top * cols, (c.top + Composer.GRID_ROWS) * cols);
+      return { cols, rows, top: c.top, hiRow: Math.floor(c.hi / cols), items };
+    }
+
+    scrollGrid() {
+      const c = this.cand, cols = this.opts.pageSize, R = Composer.GRID_ROWS;
+      const row = Math.floor(c.hi / cols);
+      if (c.top === undefined) c.top = 0;
+      if (row < c.top) c.top = row;
+      if (row >= c.top + R) c.top = row - R + 1;
+      c.page = Math.floor(c.hi / cols);
+    }
+
+    handleGridKey(k, out) {
+      const c = this.cand, cols = this.opts.pageSize, last = c.list.length - 1;
+      const digit = /^(Digit|Numpad)([1-9])$/.exec(k.code);
+      if (digit && !k.shift) {
+        const item = c.list[Math.floor(c.hi / cols) * cols + Number(digit[2]) - 1];
+        if (item) this.selectCandidate(item);
+        return out;
+      }
+      const collapse = () => { c.expanded = false; c.top = undefined; c.page = Math.floor(c.hi / cols); };
+      switch (k.code) {
+        case 'Escape': collapse(); return out;
+        case 'Enter': case 'NumpadEnter': this.selectCandidate(c.list[c.hi]); return out;
+        case 'ArrowRight': c.hi = Math.min(last, c.hi + 1); break;
+        case 'ArrowLeft': c.hi = Math.max(0, c.hi - 1); break;
+        case 'ArrowDown': if (c.hi + cols <= last) c.hi += cols; else if (Math.floor(c.hi / cols) < Math.floor(last / cols)) c.hi = last; break;
+        case 'ArrowUp': if (c.hi < cols) { collapse(); return out; } c.hi -= cols; break;
+        case 'Space': case 'PageDown': c.hi = Math.min(last, c.hi + cols * Composer.GRID_ROWS); break;
+        case 'PageUp': c.hi = Math.max(0, c.hi - cols * Composer.GRID_ROWS); break;
+        default:
+          this.cand = null;
+          return this.handleKey(k);
+      }
+      this.scrollGrid();
       return out;
     }
 
@@ -1288,6 +1345,8 @@
       return out;
     }
   }
+
+  Composer.GRID_ROWS = 6; // 攤開的候選字表一次顯示幾列
 
   // 有沒有只打聲母（簡拼）的音節
   const hasAbbr = (syls) => syls.some((s) => s.tone === null && isAbbr(s.body));

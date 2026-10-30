@@ -310,6 +310,8 @@
   function renderCandidates() {
     candBox.textContent = '';
     const c = composer.cand;
+    candBox.classList.toggle('wide', !!c.expanded);
+    if (c.expanded) return renderCandGrid();
     const page = composer.candPage();
     page.forEach((item, k) => {
       const i = c.page * composer.opts.pageSize + k;
@@ -323,7 +325,28 @@
     const pages = Math.ceil(c.list.length / composer.opts.pageSize);
     const foot = el('div', 'foot');
     foot.appendChild(el('span', null, `${c.page + 1} / ${pages} 頁`));
-    foot.appendChild(el('span', null, '數字選 · 空白翻頁 · Esc 關閉'));
+    foot.appendChild(el('span', null, '數字選 · 空白翻頁 · → 全部展開'));
+    candBox.appendChild(foot);
+  }
+
+  // 按 → 攤開的候選字表：高亮那一列標上 1～9
+  function renderCandGrid() {
+    const c = composer.cand;
+    const g = composer.candGrid();
+    const grid = el('div', 'cgrid');
+    grid.style.gridTemplateColumns = `repeat(${g.cols}, auto)`;
+    g.items.forEach((item, k) => {
+      const i = g.top * g.cols + k;
+      const cell = el('div', 'item' + (i === c.hi ? ' on' : ''));
+      if (Math.floor(i / g.cols) === g.hiRow) cell.appendChild(el('span', 'n', String(i % g.cols + 1)));
+      cell.appendChild(el('span', 'w', item.w));
+      cell.addEventListener('mousedown', (ev) => { ev.preventDefault(); composer.selectCandidate(item); render(); });
+      grid.appendChild(cell);
+    });
+    candBox.appendChild(grid);
+    const foot = el('div', 'foot');
+    foot.appendChild(el('span', null, `第 ${g.hiRow + 1} / ${g.rows} 列`));
+    foot.appendChild(el('span', null, '方向鍵移動 · 數字選這列 · Esc 收回'));
     candBox.appendChild(foot);
   }
 
